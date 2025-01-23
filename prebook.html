@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Friends' Kitchen Order Pre-Booking</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      background-color: #f9f9f9;
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+
+    .form-step {
+      display: none;
+    }
+
+    .form-step.active {
+      display: block;
+    }
+
+    .form-section label {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 10px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .form-section input[type="text"],
+    .form-section input[type="number"] {
+      padding: 8px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .price {
+      color: #007BFF;
+      font-weight: bold;
+    }
+
+    .payment-section {
+      text-align: center;
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background-color: #fff;
+    }
+
+    .payment-section img {
+      margin-top: 10px;
+      width: 200px;
+      height: auto;
+    }
+
+    .form-footer {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .clear-form {
+      background-color: #dc3545;
+    }
+
+    .clear-form:hover {
+      background-color: #c82333;
+    }
+  </style>
+</head>
+<body>
+  <h2>Friends' Kitchen Order Pre-Booking</h2>
+  
+  <!-- Step 1: Welcome Page -->
+  <div class="form-step active" id="welcomePage">
+    <div class="welcome-section">
+      <img src="Menu.jpeg" alt="Friends' Kitchen Menu" style="width: 100%; height: auto;">
+      <!-- Replace with your actual image URL -->
+    </div>
+    <button type="button" onclick="goToNextStep()">Next</button>
+  </div>
+  
+  <!-- Step 2: Order Form -->
+  <div class="form-step" id="orderForm">
+    <form action="http://192.168.68.103:5000/save_to_excel" method="POST" onsubmit="return validateForm()">
+      <!-- User Details -->
+      <div class="form-section">
+        <label>
+          Name *:
+          <input type="text" id="name" name="name" required placeholder="Your answer">
+        </label>
+        <label>
+          Phone Number (without any space) *:
+          <input type="number" id="phone" name="phone" min="1" required placeholder="Enter a valid phone number">
+        </label>
+        <label>
+          Villa Number *:
+          <input type="number" id="villa" name="villa" min="1" required placeholder="Enter a valid villa number">
+        </label>
+      </div>
+
+      <!-- Breakfast Items -->
+      <div class="form-section">
+        <h3>1. Breakfast Combo</h3>
+        <p>* Includes multiple items</p>
+        <p class="price">₹280/-</p>
+        <label>
+          Count:
+          <input type="number" id="comboCount" name="comboCount" min="1" placeholder="Enter a valid count" oninput="calculateTotal()">
+        </label>
+      </div>
+
+      <div class="form-section">
+        <h3>2. Aloo Chatkara Paratha</h3>
+        <p class="price">₹100/-</p>
+        <label>
+          Count:
+          <input type="number" id="alooCount" name="alooCount" min="1" placeholder="Enter a valid count" oninput="calculateTotal()">
+        </label>
+      </div>
+
+      <div class="form-section">
+        <h3>3. Paneer-e-Bahar Paratha</h3>
+        <p class="price">₹125/-</p>
+        <label>
+          Count:
+          <input type="number" id="paneerCount" name="paneerCount" min="1" placeholder="Enter a valid count" oninput="calculateTotal()">
+        </label>
+      </div>
+
+      <div class="form-section">
+        <h3>4. Ghee-Licious Gajar Halwa</h3>
+        <p class="price">₹50/-</p>
+        <label>
+          Count:
+          <input type="number" id="halwaCount" name="halwaCount" min="1" placeholder="Enter a valid count" oninput="calculateTotal()">
+        </label>
+      </div>
+
+      <div class="form-section">
+        <h3>5. Chilled Chaas</h3>
+        <p class="price">₹25/-</p>
+        <label>
+          Count:
+          <input type="number" id="chaasCount" name="chaasCount" min="1" placeholder="Enter a valid count" oninput="calculateTotal()">
+        </label>
+      </div>
+
+      <!-- Total Amount -->
+      <div>
+        <h3>Total Amount: ₹<span id="totalAmount">0</span></h3>
+      </div>
+
+      <!-- Payment Section -->
+      <div class="payment-section">
+        <p>Make Payment to below QR Code or 9900032195</p>
+        <img src="QR-Code.jpeg" alt="Payment QR Code">
+      </div>
+
+      <!-- Payment Reference Section -->
+      <div class="form-section">
+        <label>
+          Payment Reference Number *:
+          <input type="text" id="paymentRef" name="paymentRef" required placeholder="Your payment reference">
+        </label>
+      </div>
+
+      <!-- Form Footer -->
+      <div class="form-footer">
+        <button type="button" onclick="goToPreviousStep()">Back</button>
+        <button type="submit">Submit</button>
+        <button type="button" class="clear-form" onclick="resetForm()">Clear Form</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    // Navigation Functions
+    function goToNextStep() {
+      document.getElementById("welcomePage").classList.remove("active");
+      document.getElementById("orderForm").classList.add("active");
+    }
+
+    function goToPreviousStep() {
+      document.getElementById("orderForm").classList.remove("active");
+      document.getElementById("welcomePage").classList.add("active");
+    }
+
+    // Reset Form
+    function resetForm() {
+      document.getElementById("name").value = "";
+      document.getElementById("phone").value = "";
+      document.getElementById("villa").value = "";
+      document.getElementById("comboCount").value = "";
+      document.getElementById("alooCount").value = "";
+      document.getElementById("paneerCount").value = "";
+      document.getElementById("halwaCount").value = "";
+      document.getElementById("chaasCount").value = "";
+      document.getElementById("paymentRef").value = "";
+      calculateTotal();
+    }
+
+    // Calculate Total Amount
+    const PRICES = { combo: 280, aloo: 100, paneer: 125, halwa: 50, chaas: 25 };
+    function calculateTotal() {
+      const comboCount = parseInt(document.getElementById("comboCount").value) || 0;
+      const alooCount = parseInt(document.getElementById("alooCount").value) || 0;
+      const paneerCount = parseInt(document.getElementById("paneerCount").value) || 0;
+      const halwaCount = parseInt(document.getElementById("halwaCount").value) || 0;
+      const chaasCount = parseInt(document.getElementById("chaasCount").value) || 0;
+
+      const totalAmount =
+        comboCount * PRICES.combo +
+        alooCount * PRICES.aloo +
+        paneerCount * PRICES.paneer +
+        halwaCount * PRICES.halwa +
+        chaasCount * PRICES.chaas;
+
+      document.getElementById("totalAmount").textContent = totalAmount.toFixed(2);
+    }
+
+    // Validation
+    function validateForm() {
+      const phone = document.getElementById("phone").value.trim();
+      const villa = document.getElementById("villa").value.trim();
+      const paymentRef = document.getElementById("paymentRef").value.trim();
+
+      if (!phone || !villa || !paymentRef) {
+        alert("Please fill all mandatory fields!");
+        return false;
+      }
+      return true;
+    }
+  </script>
+</body>
+</html>
+
